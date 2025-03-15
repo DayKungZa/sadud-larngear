@@ -1,38 +1,60 @@
-// app/page.tsx
 "use client";
 
-import React, { useState } from "react";
-import HeatmapGrid from "@/components/HeatmapGrid";
-
-interface Event {
-  date: string;
-  time: string;
-  description: string;
-}
-
-const generateGridData = () => {
-  return Array.from({ length: 13 * 6 }, (_, index) => ({
-    x: index % 13,
-    y: Math.floor(index / 13),
-    events: Math.random() > 0.7
-      ? [{ date: "2025-03-10", time: "14:00", description: "Incident" }]
-      : [],
-  }));
-};
+import { useState } from "react";
+import Grid from "@/components/Grid";
+import ChatBot from "@/components/ChatBot";
+import { motion } from "framer-motion";
 
 export default function Home() {
-  const [gridData, setGridData] = useState(generateGridData());
+  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-200 p-4">
-      <h1 className="text-2xl font-bold mb-4">Heatmap Grid</h1>
-      <HeatmapGrid gridData={gridData} />
-      <button
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => setGridData(generateGridData())}
-      >
-        Refresh Data
-      </button>
-    </main>
+    <div className="flex items-center justify-center h-screen w-screen bg-gray-100 p-4">
+      <div className="flex w-full h-full border shadow-lg rounded-lg bg-white">
+        {/* Left Side - Grid */}
+        <div className="w-2/3 h-full flex flex-col justify-center items-center">
+          <h1 className="text-3xl font-bold mb-4 text-gray-800">Larnger Position</h1>
+          <div className="w-full h-full">
+            <Grid onCellSelect={setSelectedCell} />
+          </div>
+        </div>
+
+        {/* Right Side - Detail Panel */}
+        <div className="w-1/3 h-full p-4 flex flex-col border-l relative bg-white">
+          {/* Chatbot Fullscreen Mode */}
+          {chatOpen ? (
+            <ChatBot onClose={() => setChatOpen(false)} />
+          ) : (
+            <>
+              {/* Detail Panel */}
+              <div className="flex flex-col justify-center items-center flex-grow">
+                <h2 className="text-2xl font-semibold text-gray-800">Detail Panel</h2>
+                {selectedCell ? (
+                  <p className="mt-2 text-xl font-bold text-gray-700">{selectedCell}</p>
+                ) : (
+                  <p className="mt-2 text-gray-400 text-lg">Click a cell to see details.</p>
+                )}
+              </div>
+
+              {/* Chatbot Button Block */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="absolute bottom-4 left-4 right-4 flex justify-center"
+              >
+                <button
+                  className="w-full max-w-[90%] px-6 py-4 bg-white text-blue-500 font-semibold rounded-lg shadow-md border hover:bg-gray-100 transition-all"
+                  onClick={() => setChatOpen(true)}
+                >
+                  💬 Open Chat
+                </button>
+              </motion.div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
