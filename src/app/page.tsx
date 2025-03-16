@@ -42,19 +42,7 @@ export default function Home() {
   
     if (isLoggedIn && !user) return;
   
-    const username = isLoggedIn && user?.username ? user.username : "Anonymous"; 
-  
-    console.log("User object:", user);
-    console.log("Is logged in:", isLoggedIn);
-    console.log("Using username:", username);
-  
-    setChatHistory((prev) => ({
-      ...prev,
-      [selectedCell]: [
-        ...(prev[selectedCell] || []),
-        { isUser: isLoggedIn, username, text: message }, 
-      ],
-    }));
+    const username = isLoggedIn && user?.username ? user.username : "Anonymous";
   
     try {
       console.log(`POSTING MESSAGE BY: ${username}`);
@@ -64,7 +52,7 @@ export default function Home() {
       await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ row, col, message, username }), 
+        body: JSON.stringify({ row, col, message, username }), // ✅ Send username
       });
     } catch (error) {
       console.error("Chat Save Error:", error);

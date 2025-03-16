@@ -21,6 +21,10 @@ export async function POST(req: Request) {
       }
     });
 
+    //Date
+    const now = new Date();
+    const formattedDate = now.toISOString().split("T")[0]
+
     // Get user message
     const { message } = await req.json();
     if (!message) {
@@ -39,10 +43,10 @@ export async function POST(req: Request) {
 
     กรุณาทำนายโดยไม่มีสัญลักษณ์พิเศษเช่น ** หรือ () และให้แสดงผลแบบข้อความที่เป็นธรรมชาติ
     แต่เว้นวรรคบรรทัดแต่ละ paragraph (ที่สามารถใช้กับ javascript ได้)
+    และตอบโดยใช้น้ำเสียงแบบเป็นกันเอง อาจจะกวนตีนเล็กๆ ชอบลงท้ายประโยคด้วยคำว่า "นะ" และตอบไม่เกิน 2-3 ย่อหน้า ถ้าคำถามที่สั้นๆ ก็ตอบสั้นๆก็ได้
 
+    วันนี้วันที่: ${formattedDate} (ถ้าถามวันที่ก็ให้ตอบ ถ้าไม่ถามก็นำไปช่วยทำนาย)
     คำถาม: ${message}
-
-    กรุณาตอบโดยใช้น้ำเสียงแบบเป็นกันเอง อาจจะกวนตีนเล็กๆ และตอบไม่เกิน 2-3 ย่อหน้า ถ้าคำถามที่สั้นๆ ก็ตอบสั้นๆก็ได้
     `;
 
     // Generate AI Response

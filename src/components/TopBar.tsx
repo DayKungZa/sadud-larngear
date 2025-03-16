@@ -7,7 +7,7 @@ export default function TopBar() {
   const { isLoggedIn, logout } = useAuth();
 
   return (
-    <nav className="bg-gray-800 text-white p-2 shadow-md">
+    <nav className="bg-gray-800 text-white p-2 shadow-md fixed top-0 left-0 w-full z-50">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="text-lg font-bold hover:text-gray-200">
           Home
