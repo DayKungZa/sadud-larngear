@@ -26,14 +26,14 @@ export default function AuthPage() {
       alert("Please fill in all fields.");
       return;
     }
-
+  
     if (!isLogin && formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-
+  
     const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
-
+  
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -43,18 +43,18 @@ export default function AuthPage() {
         password: formData.password,
       }),
     });
-
+  
     const data = await response.json();
-
+  
     if (!response.ok) {
       alert(data.error || "Something went wrong");
     } else {
       alert(isLogin ? "Login successful!" : "Registration successful!");
       if (isLogin) {
-        login();
+        login(data.token);
         router.push("/");
       } else {
-        setIsLogin(true)
+        setIsLogin(true);
       }
     }
   };
