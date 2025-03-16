@@ -6,7 +6,6 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    // ✅ Group by row & col and count messages per block
     const chatCounts = await Chat.aggregate([
       { $group: { _id: { row: "$row", col: "$col" }, count: { $sum: 1 } } },
     ]);

@@ -16,7 +16,7 @@ export async function connectToDatabase() {
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(MONGODB_URI, {
-        dbName: "10DaysChallenge", // ✅ Change to your actual database name
+        dbName: "10DaysChallenge", 
       })
       .then((mongoose) => mongoose);
   }
