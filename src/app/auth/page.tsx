@@ -66,7 +66,6 @@ export default function AuthPage() {
           {isLogin ? "Login" : "Register"}
         </h2>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 mt-4 text-black">
           {/* Username Input (Only for Register) */}
           {!isLogin && (
