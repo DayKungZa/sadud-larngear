@@ -1,103 +1,108 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import Grid from "@/components/Grid";
+import ChatPanel from "@/components/ChatPanel"; // Mini chat per cell
+import ChatBot from "@/components/ChatBot"; // Full chatbot
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatHistory, setChatHistory] = useState<{ [key: string]: { sender: string; text: string }[] }>({});
+  const [fetchedCells, setFetchedCells] = useState<Set<string>>(new Set()); // ✅ Store cells that have already been fetched
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleCellClick = async (cell: string) => {
+    setSelectedCell(cell);
+    setChatOpen(false); // ✅ Close chatbot when clicking a cell
+
+    // ✅ If chat history for this cell is already fetched, do not fetch again
+    if (!fetchedCells.has(cell)) {
+      try {
+        const [row, col] = cell.split(/(\d+)/).filter(Boolean); // Extract row and column
+        const response = await fetch(`/api/chat?row=${row}&col=${col}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setChatHistory((prev) => ({
+            ...prev,
+            [cell]: data.chats.map((chat: any) => ({ sender: "bot", text: chat.message })), // ✅ Mark fetched messages as bot messages
+          }));
+          setFetchedCells((prev) => new Set(prev).add(cell)); // ✅ Mark this cell as fetched
+        }
+      } catch (error) {
+        console.error("Chat Fetch Error:", error);
+      }
+    }
+  };
+
+  const handleSendMessage = async (message: string) => {
+    if (selectedCell) {
+      setChatHistory((prev) => ({
+        ...prev,
+        [selectedCell]: [...(prev[selectedCell] || []), { sender: "user", text: message }],
+      }));
+
+      try {
+        const [row, col] = selectedCell.split(/(\d+)/).filter(Boolean);
+        await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ row, col, message }),
+        });
+      } catch (error) {
+        console.error("Chat Save Error:", error);
+      }
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center h-screen w-screen bg-gray-100 p-4">
+      <div className="flex w-full h-full border shadow-lg rounded-lg bg-white">
+        {/* Left Side - Grid */}
+        <div className="w-2/3 h-full flex flex-col justify-center items-center">
+          <h1 className="text-3xl font-bold mb-4 text-gray-800">Grid Table (6 × 13)</h1>
+          <div className="w-full h-full">
+            <Grid onCellSelect={handleCellClick} />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Right Side - Detail Panel */}
+        <div className="w-1/3 h-full p-4 flex flex-col border-l relative bg-white">
+          {/* ✅ If Chatbot is Open, Show Chatbot (Full Screen) */}
+          {chatOpen ? (
+            <ChatBot onClose={() => setChatOpen(false)} />
+          ) : (
+            <>
+              {/* ✅ Show Mini Chat for Selected Cell */}
+              {selectedCell ? (
+                <div className="flex-grow h-[75%] overflow-hidden">
+                  <ChatPanel
+                    cell={selectedCell}
+                    messages={chatHistory[selectedCell] || []}
+                    onSendMessage={handleSendMessage}
+                    onClose={() => setSelectedCell(null)}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col justify-center items-center flex-grow">
+                  <h2 className="text-2xl font-semibold text-gray-800">Detail Panel</h2>
+                  <p className="mt-2 text-gray-400 text-lg">Click a cell to open chat.</p>
+                </div>
+              )}
+
+              {/* ✅ Always Show Chatbot Button */}
+              <div className="absolute bottom-4 left-4 right-4 flex justify-center">
+                <button
+                  className="w-full max-w-[90%] px-6 py-4 bg-white text-blue-500 font-semibold rounded-xl shadow-md border hover:bg-gray-100 transition-all"
+                  onClick={() => setChatOpen(true)}
+                >
+                  💬 Open Chatbot
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
