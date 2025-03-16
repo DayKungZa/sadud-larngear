@@ -1,22 +1,28 @@
 "use client";
-
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true); // Toggle between Login & Register
+  const [isLogin, setIsLogin] = useState(true); 
   const [formData, setFormData] = useState({
+    username: "", 
     email: "",
     password: "",
-    confirmPassword: "", // Added for Register
+    confirmPassword: "", 
   });
 
-  const handleChange = (e: { target: { name: any; value: any; }; }) => {
+  const router = useRouter();
+  const { login } = useAuth();
+
+  const handleChange = (e: { target: { name: any; value: any } }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
+    
+    if (!isLogin && (!formData.username || !formData.email || !formData.password)) {
       alert("Please fill in all fields.");
       return;
     }
@@ -26,8 +32,31 @@ export default function AuthPage() {
       return;
     }
 
-    console.log(isLogin ? "Logging in..." : "Registering...", formData);
-    alert(isLogin ? "Login successful!" : "Registration successful!");
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Something went wrong");
+    } else {
+      alert(isLogin ? "Login successful!" : "Registration successful!");
+      if (isLogin) {
+        login();
+        router.push("/");
+      } else {
+        setIsLogin(true)
+      }
+    }
   };
 
   return (
@@ -38,7 +67,22 @@ export default function AuthPage() {
         </h2>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4 text-black">
+          {/* Username Input (Only for Register) */}
+          {!isLogin && (
+            <div>
+              <label className="block text-gray-600 text-sm font-medium">Username:</label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className="w-full p-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required={!isLogin}
+              />
+            </div>
+          )}
+
           {/* Email Input */}
           <div>
             <label className="block text-gray-600 text-sm font-medium">Email:</label>
@@ -65,7 +109,7 @@ export default function AuthPage() {
             />
           </div>
 
-          {/* Confirm Password (Only in Register) */}
+          {/* Confirm Password (Only for Register) */}
           {!isLogin && (
             <div>
               <label className="block text-gray-600 text-sm font-medium">Confirm Password:</label>
@@ -75,7 +119,7 @@ export default function AuthPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 className="w-full p-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                required={!isLogin}
               />
             </div>
           )}
@@ -96,7 +140,7 @@ export default function AuthPage() {
             type="button"
             onClick={() => {
               setIsLogin(!isLogin);
-              setFormData({ email: "", password: "", confirmPassword: "" }); // Reset fields when switching
+              setFormData({ username: "", email: "", password: "", confirmPassword: "" }); 
             }}
             className="text-blue-500 hover:underline"
           >
