@@ -37,7 +37,9 @@ export default function AuthPage() {
           {isLogin ? "Login" : "Register"}
         </h2>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {/* Email Input */}
           <div>
             <label className="block text-gray-600 text-sm font-medium">Email:</label>
             <input
@@ -50,6 +52,7 @@ export default function AuthPage() {
             />
           </div>
 
+          {/* Password Input */}
           <div>
             <label className="block text-gray-600 text-sm font-medium">Password:</label>
             <input
@@ -62,6 +65,7 @@ export default function AuthPage() {
             />
           </div>
 
+          {/* Confirm Password (Only in Register) */}
           {!isLogin && (
             <div>
               <label className="block text-gray-600 text-sm font-medium">Confirm Password:</label>
@@ -76,6 +80,7 @@ export default function AuthPage() {
             </div>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
@@ -84,14 +89,19 @@ export default function AuthPage() {
           </button>
         </form>
 
+        {/* Toggle Between Login & Register */}
         <p className="text-center text-sm text-gray-600 mt-4">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <a
-            href={isLogin ? "/login?register=true" : "/login"}
+          <button
+            type="button"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setFormData({ email: "", password: "", confirmPassword: "" }); // Reset fields when switching
+            }}
             className="text-blue-500 hover:underline"
           >
             {isLogin ? "Register" : "Login"}
-          </a>
+          </button>
         </p>
       </div>
     </div>
