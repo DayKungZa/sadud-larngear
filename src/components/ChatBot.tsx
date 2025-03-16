@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import { Send, X } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -9,15 +10,50 @@ interface ChatBotProps {
 const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
-    setMessages([...messages, { sender: "user", text: input }]);
+    const userMessage = { sender: "user", text: input };
+
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { sender: "bot", text: "Hello! How can I assist you?" }]);
-    }, 1000);
+    setLoading(true);
+
+    try {
+      const response = await axios.post("/api/gemini", { message: input });
+
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+
+      // Simulate streaming effect for AI response
+      const botReply = { sender: "bot", text: "" };
+      setMessages((prev) => [...prev, botReply]);
+
+      for (const char of response.data.reply) {
+        await new Promise((resolve) => setTimeout(resolve, 20)); // Typing speed effect
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1] = {
+            sender: "bot",
+            text: prev[newMessages.length - 1].text + char,
+          };
+          return newMessages;
+        });
+      }
+    } catch (error) {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Oops! Something went wrong." }]);
+      console.error("ChatBot Error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <motion.div
@@ -29,7 +65,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
     >
       {/* Header */}
       <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">ChatBot</h2>
+        <h2 className="text-xl font-semibold text-gray-800">🔮 Chat with the Astrologer</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500 transition">
           <X size={24} />
         </button>
@@ -37,25 +73,26 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
 
       {/* Messages Area */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50">
-        {messages.length === 0 ? (
-          <p className="text-gray-400 text-center">Type a message to start chatting...</p>
-        ) : (
-          messages.map((msg, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: msg.sender === "user" ? 30 : -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`p-3 rounded-lg w-fit max-w-[80%] shadow-sm ${
-                msg.sender === "user"
-                  ? "ml-auto bg-blue-500 text-white"
-                  : "mr-auto bg-gray-200 text-gray-800"
-              }`}
-            >
-              {msg.text}
-            </motion.div>
-          ))
-        )}
+        {messages.map((msg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: msg.sender === "user" ? 30 : -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`p-3 rounded-lg w-fit max-w-[80%] shadow-sm ${
+              msg.sender === "user"
+                ? "ml-auto bg-blue-500 text-white"
+                : "mr-auto bg-gray-200 text-gray-800"
+            }`}
+          >
+            {msg.text}
+          </motion.div>
+        ))}
+
+        {/* Loading Indicator */}
+        {loading && <p className="text-gray-400 text-center">🔮 Thinking about your future...</p>}
+
+        <div ref={chatEndRef} />
       </div>
 
       <div className="p-4 border-t bg-white flex items-center">
@@ -68,11 +105,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
             }
           }}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
+          placeholder="Type your birth date or zodiac sign..."
         />
         <button
           className="ml-3 p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
           onClick={sendMessage}
+          disabled={loading}
         >
           <Send size={20} />
         </button>
