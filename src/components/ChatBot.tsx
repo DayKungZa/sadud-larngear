@@ -23,7 +23,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      exit={{ opacity: 0, scale: 0.95 }} 
       transition={{ duration: 0.2 }}
       className="flex flex-col h-full w-full bg-white rounded-lg shadow-lg border"
     >
@@ -58,11 +58,15 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
         )}
       </div>
 
-      {/* Input Area */}
       <div className="p-4 border-t bg-white flex items-center">
         <input
-          className="flex-1 p-3 border rounded-lg bg-gray-100 focus:ring focus:ring-blue-300 outline-none"
+          className="flex-1 p-3 border rounded-lg bg-gray-100 focus:ring focus:ring-blue-300 outline-none text-black"
           value={input}
+          onKeyDown={(e) => {
+            if (e.keyCode === 13) {
+              sendMessage()
+            }
+          }}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type a message..."
         />
