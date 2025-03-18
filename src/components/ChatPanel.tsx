@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Send, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface ChatPanelProps {
   cell: string;
-  messages: { sender: string; text: string }[];
+  messages: { isUser: boolean; username: string; text: string }[];
   onSendMessage: (message: string) => void;
   onClose: () => void;
 }
 
 const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, onClose }) => {
+  const { user, isLoggedIn } = useAuth();
   const [input, setInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -44,21 +46,24 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
         {messages.length === 0 ? (
           <p className="text-gray-400 text-center">Start typing to chat...</p>
         ) : (
-          messages.map((msg, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: msg.sender === "user" ? 30 : -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`p-3 rounded-lg w-fit max-w-[80%] shadow-sm ${
-                msg.sender === "user"
-                  ? "ml-auto bg-blue-500 text-white"
-                  : "mr-auto bg-gray-200 text-gray-800"
-              }`}
-            >
-              {msg.text}
-            </motion.div>
-          ))
+          messages.map((msg, index) => {
+            const isCurrentUser = isLoggedIn && user?.username === msg.username && msg.username != "Anonymous";
+
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: isCurrentUser ? 30 : -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`p-3 rounded-lg w-fit max-w-[80%] shadow-sm ${
+                  isCurrentUser ? "ml-auto bg-blue-500 text-white" : "mr-auto bg-gray-200 text-gray-800"
+                }`}
+              >
+                <p className="text-sm font-bold mb-1">{msg.username || "Anonymous"}</p>
+                <p>{msg.text}</p>
+              </motion.div>
+            );
+          })
         )}
         <div ref={chatEndRef} />
       </div>

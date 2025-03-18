@@ -26,10 +26,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(
+      { userId: user._id, username: user.username, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    return NextResponse.json({ message: "Login successful", token }, { status: 200 });
+    return NextResponse.json(
+      { message: "Login successful", token },
+      { status: 200 }
+    );
   } catch (error) {
+    console.error("Login Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

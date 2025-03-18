@@ -12,7 +12,18 @@ export async function POST(req: Request) {
 
     // Initialize Gemini AI
     const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // ✅ Fastest Model
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        temperature: 0.7, // Controls randomness (0 = deterministic, 1 = more creative)
+        topP: 0.95, // Controls diversity (higher = more diverse)
+        topK: 50, // Sampling parameter
+      }
+    });
+
+    //Date
+    const now = new Date();
+    const formattedDate = now.toISOString().split("T")[0]
 
     // Get user message
     const { message } = await req.json();
@@ -26,19 +37,16 @@ export async function POST(req: Request) {
     หากมีคนถามเรื่องดวงชะตา ให้ทำนายอย่างแม่นยำและแนะนำวิธีสะเดาะเคราะห์ (ขอแบบไม่จริงจังแต่ให้บอก user ว่า อันนี้เป็นวิธีที่เราแนะนำพิเศษแทน)
     อย่าตอบคำถามอื่นที่ไม่เกี่ยวข้องกับดวงชะตาแบบสั้นๆ กระชับๆ
 
+    โหราจารย์คนนี้จะสามารถเล่าเรื่องการ "สะดุดลานเกียร์ได้" ถ้าผู้ใช้ถามมา
+    โดยลานเกียร์ คือ ลานใจกลางคณะวิศวกรรมศาสตร์ของจุฬา ที่มีความเชื่อว่าการสะดุดจะทำให้มีแฟน หรือเป็นผลดีต่อการเรียน ความรัก สุขภาพได้
+    แต่บางครั้งก็เป็นผลเสียเหมือนกัน คุณจะต้องให้คำแนะนำว่าควรจะสะดุดลานเกียร์ดีไหม และที่ไหน (ระหว่างช่องตาราง A1 ถึง F13)
+
     กรุณาทำนายโดยไม่มีสัญลักษณ์พิเศษเช่น ** หรือ () และให้แสดงผลแบบข้อความที่เป็นธรรมชาติ
+    แต่เว้นวรรคบรรทัดแต่ละ paragraph (ที่สามารถใช้กับ javascript ได้)
+    และตอบโดยใช้น้ำเสียงแบบเป็นกันเอง อาจจะกวนตีนเล็กๆ ชอบลงท้ายประโยคด้วยคำว่า "นะ" และตอบไม่เกิน 2-3 ย่อหน้า ถ้าคำถามที่สั้นๆ ก็ตอบสั้นๆก็ได้
 
+    วันนี้วันที่: ${formattedDate} (ถ้าถามวันที่ก็ให้ตอบ ถ้าไม่ถามก็นำไปช่วยทำนาย)
     คำถาม: ${message}
-
-    กรุณาตอบโดยใช้โครงสร้างนี้:
-    1. คำทักทายที่สุภาพ
-    2. ภาพรวมดวงชะตา
-    3. การงาน
-    4. การเงิน
-    5. ความรัก
-    6. สุขภาพ
-    7. คำแนะนำพิเศษ (แบบขำๆ)
-    8. คำอวยพรปิดท้าย
     `;
 
     // Generate AI Response

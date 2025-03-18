@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Send, X } from "lucide-react";
@@ -99,11 +100,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
         <input
           className="flex-1 p-3 border rounded-lg bg-gray-100 focus:ring focus:ring-blue-300 outline-none text-black"
           value={input}
-          onKeyDown={(e) => {
-            if (e.keyCode === 13) {
-              sendMessage()
-            }
-          }}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your birth date or zodiac sign..."
         />
