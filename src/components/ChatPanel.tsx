@@ -40,31 +40,16 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
   const [isSending, setIsSending] = useState(false);
 
   const sendMessage = async () => {
-    if (!title.trim() || !message.trim()) {
-      console.error("Title and message are required.");
-      return;
-    }
 
     if (isSending) return; 
-    setIsSending(true);
-
-    const newMessage = {
-      row: cell.charAt(0), 
-      col: cell.slice(1), 
-      title,
-      username: user?.username || "Anonymous",
-      message,
-      love: Number(love),
-      money: Number(money),
-      health: Number(health),
-    };
-
+      setIsSending(true);
     try {
       onSendMessage(message, title, love, money, health); 
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
       setIsSending(false);
+      setIsModalOpen(false);
     }
   };
 

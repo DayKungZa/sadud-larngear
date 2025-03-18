@@ -59,8 +59,11 @@ export default function Home() {
   const handleSendMessage = async (message: string, title: string, love: number, money: number, health: number) => {
     if (!selectedCell) return;
     if (isLoggedIn && !user) return;
-  
+
     const username = isLoggedIn && user?.username ? user.username : "Anonymous";
+    title = title? title : "New Sadud";
+    message = message? message : " ";
+
     const [row, col] = selectedCell.match(/^([A-Za-z]+)(\d+)$/)!.slice(1);
   
     // Update local state first for instant feedback
