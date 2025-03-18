@@ -5,13 +5,13 @@ import Chat from "@/models/Chat";
 export async function POST(req: Request) {
   try {
     await connectToDatabase();
-    const { row, col, message, username } = await req.json();
-
-    if (!row || !col || !message) {
+    const body = await req.json();
+    
+    if (!body.title || !body.message || body.love === undefined || body.money === undefined || body.health === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const newChat = new Chat({ row, col, message, username });
+    const newChat = new Chat(body);
     await newChat.save();
 
     return NextResponse.json({ success: true, chat: newChat });
