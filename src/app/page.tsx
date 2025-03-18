@@ -63,8 +63,8 @@ export default function Home() {
   
 
   return (
-    <div className="flex items-center justify-center h-screen w-screen bg-gray-100 p-4">
-      <div className="flex w-full h-full border shadow-lg rounded-lg bg-white">
+    <div className="flex items-center justify-center h-screen w-full bg-gray-100 p-4">
+      <div className="flex w-full h-full border shadow-lg rounded-lg bg-white p-4">
         {/* Left Side - Grid */}
         <div className="w-2/3 h-full flex flex-col justify-center items-center">
           <h1 className="text-3xl font-bold mb-4 text-gray-800">Grid Table (6 × 13)</h1>
