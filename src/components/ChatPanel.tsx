@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Send, X } from "lucide-react";
+import { X, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
+import Slider from "./Slider";
 
 interface ChatPanelProps {
   cell: string;
@@ -12,18 +13,67 @@ interface ChatPanelProps {
 
 const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, onClose }) => {
   const { user, isLoggedIn } = useAuth();
-  const [input, setInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    onSendMessage(input);
-    setInput("");
-  };
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [love, setLove] = useState(0);
+  const [money, setMoney] = useState(0);
+  const [health, setHealth] = useState(0);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const [isSending, setIsSending] = useState(false);
+
+  const sendMessage = async () => {
+    if (!title.trim() || !message.trim()) {
+      console.error("Title and message are required.");
+      return;
+    }
+
+    if (isSending) return; 
+    setIsSending(true);
+
+    const newMessage = {
+      row: cell.charAt(0), 
+      col: cell.slice(1), 
+      username: user?.username || "Anonymous",
+      title,
+      message,
+      love: Number(love),
+      money: Number(money),
+      health: Number(health),
+    };
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newMessage),
+      });
+
+      if (!response.ok) throw new Error("Failed to send message");
+
+      setIsModalOpen(false);
+      setTitle("");
+      setMessage("");
+      setLove(0);
+      setMoney(0);
+      setHealth(0);
+      
+      onSendMessage(message); 
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
 
   return (
     <motion.div
@@ -33,7 +83,6 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
       transition={{ duration: 0.2 }}
       className="flex flex-col h-[90%] w-full bg-white rounded-lg shadow-lg border"
     >
-      {/* Header */}
       <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-800">Chat for {cell}</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500 transition">
@@ -41,13 +90,12 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
         </button>
       </div>
 
-      {/* Messages Area */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50">
         {messages.length === 0 ? (
           <p className="text-gray-400 text-center">Start typing to chat...</p>
         ) : (
           messages.map((msg, index) => {
-            const isCurrentUser = isLoggedIn && user?.username === msg.username && msg.username != "Anonymous";
+            const isCurrentUser = isLoggedIn && user?.username === msg.username && msg.username !== "Anonymous";
 
             return (
               <motion.div
@@ -68,21 +116,64 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t bg-white flex items-center">
-        <input
-          className="flex-1 p-3 border rounded-lg bg-gray-100 focus:ring focus:ring-blue-300 outline-none"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-        />
+      <div className="p-4 border-t bg-white flex justify-center">
         <button
-          className="ml-3 p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
-          onClick={sendMessage}
+          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
+          onClick={() => setIsModalOpen(true)}
         >
-          <Send size={20} />
+          <MessageCircle size={20} />
+          Send Message
         </button>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md"
+          >
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Enter Your Details</h2>
+
+            <input
+              className="w-full p-3 border rounded-lg bg-gray-100 focus:ring focus:ring-blue-300 outline-none mb-4"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter title..."
+            />
+
+            <textarea
+              className="w-full p-3 border rounded-lg bg-gray-100 focus:ring focus:ring-blue-300 outline-none mb-4"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Enter your message..."
+              rows={4}
+            />
+
+            <Slider label="Love" value={love} onChange={setLove} />
+
+            <Slider label="Money" value={money} onChange={setMoney} />
+
+            <Slider label="Health" value={health} onChange={setHealth} />
+
+            <div className="flex justify-end gap-3">
+              <button className="px-4 py-2 bg-gray-300 rounded-lg" onClick={() => setIsModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  isSending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+                }`}
+                onClick={sendMessage}
+                disabled={isSending}
+              >
+                {isSending ? "Sending..." : "Send"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };
