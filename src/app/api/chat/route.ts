@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     await connectToDatabase();
     const body = await req.json();
     
-    if (!body.title || !body.message || body.love === undefined || body.money === undefined || body.health === undefined) {
+    if (body.love === undefined || body.money === undefined || body.health === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 

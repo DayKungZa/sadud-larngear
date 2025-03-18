@@ -6,63 +6,92 @@ import ChatPanel from "@/components/ChatPanel"; // Mini chat per cell
 import ChatBot from "@/components/ChatBot"; // Full chatbot
 import { useAuth } from "@/app/context/AuthContext";
 
+interface msgProp{
+  isUser: boolean;
+  username: string;
+  title: string;
+  text: string;
+  love: number;
+  money: number;
+  health: number;
+}
+
 export default function Home() {
   const { user, isLoggedIn } = useAuth();
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatHistory, setChatHistory] = useState<{ [key: string]: { isUser: boolean; username:string, text: string }[] }>({});
+  const [chatHistory, setChatHistory] = useState<{ [key: string]: msgProp[] }>({});
   const [fetchedCells, setFetchedCells] = useState<Set<string>>(new Set());
 
   const handleCellClick = async (cell: string) => {
     setSelectedCell(cell);
     setChatOpen(false); 
 
-    if (!fetchedCells.has(cell)) {
-      try {
-        const [row, col] = cell.split(/(\d+)/).filter(Boolean);
-        const response = await fetch(`/api/chat?row=${row}&col=${col}`);
-        const data = await response.json();
+    {/* Fetch Chat Data */}
+      if (!fetchedCells.has(cell)) {
+        try {
+          const [row, col] = cell.split(/(\d+)/).filter(Boolean);
+          const response = await fetch(`/api/chat?row=${row}&col=${col}`);
+          const data = await response.json();
 
-        if (data.success) {
-          setChatHistory((prev) => ({
-            ...prev,
-            [cell]: data.chats.map((chat: any) => ({  isUser: (isLoggedIn), username: chat.username, text: chat.message })), 
-          }));
-          setFetchedCells((prev) => new Set(prev).add(cell)); 
+          if (data.success) {
+            setChatHistory((prev) => ({
+              ...prev,
+              [cell]: data.chats.map((chat: any) => ({
+                isUser: isLoggedIn, 
+                username: chat.username, 
+                text: chat.message,
+                title: chat.title, 
+                love: chat.love, 
+                money: chat.money, 
+                health: chat.health
+              })), 
+            }));
+            setFetchedCells((prev) => new Set(prev).add(cell));
+          }
+        } catch (error) {
+          console.error("Chat Fetch Error:", error);
         }
-      } catch (error) {
-        console.error("Chat Fetch Error:", error);
+    }
+  }
+
+
+  const handleSendMessage = async (message: string, title: string, love: number, money: number, health: number) => {
+    if (!selectedCell) return;
+    if (isLoggedIn && !user) return;
+  
+    const username = isLoggedIn && user?.username ? user.username : "Anonymous";
+    const [row, col] = selectedCell.match(/^([A-Za-z]+)(\d+)$/)!.slice(1);
+  
+    // Update local state first for instant feedback
+    setChatHistory((prev) => ({
+      ...prev,
+      [selectedCell]: [
+        ...(prev[selectedCell] || []),
+        { isUser: true, username, title, text: message, love, money, health },
+      ],
+    }));
+  
+    try {
+      console.log(`POSTING MESSAGE BY: ${username}`);
+  
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ row, col, username, title, message, love, money, health }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        console.error("Failed to save message:", data.error);
       }
+    } catch (error) {
+      console.error("Chat Save Error:", error);
     }
   };
-
-  const handleSendMessage = async (message: string) => {
-      if (!selectedCell) return;
-      if (isLoggedIn && !user) return;
-    
-      const username = isLoggedIn && user?.username ? user.username : "Anonymous";
-      setChatHistory((prev) => ({
-        ...prev,
-        [selectedCell]: [
-          ...(prev[selectedCell] || []),
-          { isUser: true, username, text: message },
-        ],
-      }));
-    
-      try {
-        console.log(`POSTING MESSAGE BY: ${username}`);
-    
-        const [row, col] = selectedCell.match(/^([A-Za-z]+)(\d+)$/)!.slice(1);
-    
-        await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ row, col, message, username }),
-        });
-      } catch (error) {
-        console.error("Chat Save Error:", error);
-      }
-    };
+  
+  
 
   return (
     <div className="flex items-center justify-center h-screen w-full bg-gray-100 p-4">

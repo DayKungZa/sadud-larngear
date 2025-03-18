@@ -4,12 +4,23 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import Slider from "./Slider";
 
+interface msgProp{
+  isUser: boolean;
+  username: string;
+  title: string;
+  text: string;
+  love: number;
+  money: number;
+  health: number;
+}
 interface ChatPanelProps {
   cell: string;
-  messages: { isUser: boolean; username: string; text: string }[];
-  onSendMessage: (message: string) => void;
+  messages: msgProp[];
+  onSendMessage: (message: string, title: string, love: number, money: number, health: number) => void;
   onClose: () => void;
 }
+
+
 
 const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, onClose }) => {
   const { user, isLoggedIn } = useAuth();
@@ -40,8 +51,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
     const newMessage = {
       row: cell.charAt(0), 
       col: cell.slice(1), 
-      username: user?.username || "Anonymous",
       title,
+      username: user?.username || "Anonymous",
       message,
       love: Number(love),
       money: Number(money),
@@ -49,24 +60,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
     };
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMessage),
-      });
-
-      if (!response.ok) throw new Error("Failed to send message");
-
-      setIsModalOpen(false);
-      setTitle("");
-      setMessage("");
-      setLove(0);
-      setMoney(0);
-      setHealth(0);
-      
-      onSendMessage(message); 
+      onSendMessage(message, title, love, money, health); 
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -83,13 +77,15 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
       transition={{ duration: 0.2 }}
       className="flex flex-col h-[90%] w-full bg-white rounded-lg shadow-lg border"
     >
+      {/*Header*/}
       <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Chat for {cell}</h2>
+        <h2 className="text-xl font-semibold text-gray-800">Saduds of {cell}</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500 transition">
           <X size={24} />
         </button>
       </div>
 
+      {/*message boxes*/}
       <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50">
         {messages.length === 0 ? (
           <p className="text-gray-400 text-center">Start typing to chat...</p>
@@ -103,29 +99,60 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
                 initial={{ opacity: 0, x: isCurrentUser ? 30 : -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`p-3 rounded-lg w-fit max-w-[80%] shadow-sm ${
-                  isCurrentUser ? "ml-auto bg-blue-500 text-white" : "mr-auto bg-gray-200 text-gray-800"
+                className={`p-4 w-fit max-w-[75%] rounded-2xl shadow-md text-gray ${
+                  isCurrentUser ? "ml-auto bg-blue-100 " : "mr-auto bg-gray-100"
                 }`}
               >
-                <p className="text-sm font-bold mb-1">{msg.username || "Anonymous"}</p>
-                <p>{msg.text}</p>
+                {/* Title */}
+                <p className="text-lg font-semibold mb-1">{msg.title || "New Message"}</p>
+
+                {/* Username */}
+                <p className="text-xs font-medium mb-2 text-gray-500">
+                  by {msg.username || "Anonymous"}
+                </p>
+
+                {/* Stats (Love, Money, Health) */}
+                <div className="flex items-center gap-2 text-xs mb-2">
+                  <span
+                    className={`px-2 py-1 rounded-lg font-medium bg-gray-500/20 text-gray-700 border-2 border-solid border-gray-500`}
+                  >
+                    ❤️ {(msg.love > 0)? `+${msg.love}` : msg.love }
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded-lg font-medium bg-gray-500/20 text-gray-700 border-2 border-solid border-gray-500`}
+                  >
+                    💰 {(msg.money > 0)? `+${msg.money}` : msg.money }
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded-lg font-medium bg-gray-500/20 text-gray-700 border-2 border-solid border-gray-500`}
+                  >
+                    💖 {(msg.health > 0)? `+${msg.health}` : msg.health }
+                  </span>
+                </div>
+
+
+                {/* Message */}
+                <p className="text-sm leading-relaxed break-words">{msg.text}</p>
               </motion.div>
+
             );
           })
         )}
         <div ref={chatEndRef} />
       </div>
 
+      {/*Send Button*/}
       <div className="p-4 border-t bg-white flex justify-center">
         <button
           className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
           onClick={() => setIsModalOpen(true)}
         >
           <MessageCircle size={20} />
-          Send Message
+          Add Your New Sadud
         </button>
       </div>
 
+      {/*Pop Up Input Section*/}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
           <motion.div
