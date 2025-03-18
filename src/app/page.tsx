@@ -68,6 +68,7 @@ export default function Home() {
         {/* Left Side - Grid */}
         <div className="w-2/3 h-full flex flex-col justify-center items-center">
           <h1 className="text-3xl font-bold mb-4 text-gray-800">Grid Table (6 × 13)</h1>
+          <div><button className="bg-yellow-600 m-3 px-4 rounded">Today luck</button></div>
           <div className="w-full h-full">
             <Grid onCellSelect={handleCellClick} />
           </div>

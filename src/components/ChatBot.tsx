@@ -12,6 +12,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = async () => {
