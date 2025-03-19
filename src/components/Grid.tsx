@@ -4,7 +4,7 @@ type FilterType = "All" | "Money" | "Love" | "Health";
 
 interface GridProps {
   onCellSelect: (cell: string) => void;
-  filter: FilterType; 
+  filter: FilterType;
 }
 
 interface msgProp {
@@ -55,7 +55,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
         count = data.chats.length;
       } else {
         // Single chat object
-        const single = data.chats; 
+        const single = data.chats;
         totalLove = typeof single.love === "number" ? single.love : 0;
         totalMoney = typeof single.money === "number" ? single.money : 0;
         totalHealth = typeof single.health === "number" ? single.health : 0;
@@ -104,17 +104,23 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
     }
   };
 
+  // 1. Whenever `filter` or `shouldRefetch` changes, fetch all cells in parallel
   useEffect(() => {
     if (!shouldRefetch) return;
-    // Fetch all cells in parallel
     rows.forEach((row) => {
       cols.forEach((col) => {
         fetchCellColor(row, col);
       });
     });
-    // Once we kick off parallel requests, set back to false
+    // done fetching
     setShouldRefetch(false);
   }, [filter, shouldRefetch]); 
+
+  // 2. Whenever `filter` changes, set `shouldRefetch(true)`, 
+  //    triggering the useEffect above
+  useEffect(() => {
+    setShouldRefetch(true);
+  }, [filter]);
 
   return (
     <div className="flex justify-center items-center h-full w-full">
