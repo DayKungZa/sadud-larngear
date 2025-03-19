@@ -122,7 +122,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
 
     // If we haven't fetched (or user clicked the button again), let's fetch
     fetchData();
-  }, [filter, update]); // <-- Re-fetch when filter changes
+  }, [filter,cols,rows,update]); // <-- Re-fetch when filter changes
 
   return (
     <div className="flex justify-center items-center h-full w-full">
