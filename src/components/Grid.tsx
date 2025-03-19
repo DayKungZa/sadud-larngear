@@ -9,6 +9,16 @@ interface GridProps {
   filter: FilterType; 
 }
 
+interface msgProp {
+  isUser: boolean;
+  username: string;
+  title: string;
+  text: string;
+  love: number;
+  money: number;
+  health: number;
+}
+
 interface RGBColor {
   r: number;
   g: number;
@@ -46,7 +56,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
             }
             // 2) If data.chats is an array => multiple records
             else if (Array.isArray(data.chats)) {
-              data.chats.forEach((item: any) => {
+              data.chats.forEach((item: msgProp) => {
                 const l = typeof item.love === "number" ? item.love : 0;
                 const m = typeof item.money === "number" ? item.money : 0;
                 const h = typeof item.health === "number" ? item.health : 0;

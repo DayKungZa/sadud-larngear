@@ -77,8 +77,8 @@ export async function POST(req: Request) {
     const formattedText = responseText.replace(/\n/g, "\n\n");
 
     return NextResponse.json({ reply: formattedText });
-  } catch (error: any) {
-    console.error("Gemini API Error:", error.message || error);
+  } catch {
+    //console.error("Gemini API Error:", error.message || error);
     return NextResponse.json({ error: "Failed to fetch response from Gemini API" }, { status: 500 });
   }
 }

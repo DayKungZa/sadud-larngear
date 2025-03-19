@@ -53,10 +53,10 @@ export default function Home() {
         if (data.success) {
           setChatHistory((prev) => ({
             ...prev,
-            [cell]: data.chats.map((chat: any) => ({
+            [cell]: data.chats.map((chat: msgProp) => ({
               isUser: isLoggedIn,
               username: chat.username,
-              text: chat.message,
+              text: chat.text,
               title: chat.title,
               love: chat.love,
               money: chat.money,

@@ -24,7 +24,7 @@ export function middleware(req: NextRequest) {
         headers: requestHeaders,
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.redirect(new URL("/auth", req.url)); // Redirect if token is invalid
   }
 }
