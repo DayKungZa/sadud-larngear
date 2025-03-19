@@ -1,4 +1,5 @@
-"use client"
+"use client"; // Important for client-side fetch and React state
+
 import React, { useEffect, useState } from "react";
 
 type FilterType = "All" | "Money" | "Love" | "Health";
@@ -8,11 +9,7 @@ interface GridProps {
   filter: FilterType;
 }
 
-interface msgProp {
-  isUser: boolean;
-  username: string;
-  title: string;
-  text: string;
+interface CellAverages {
   love: number;
   money: number;
   health: number;
@@ -24,109 +21,79 @@ interface RGBColor {
   b: number;
 }
 
+const ROWS = "ABCDEF".split(""); // stable references
+const COLS = Array.from({ length: 13 }, (_, i) => i + 1);
+
 const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
-  const rows = "ABCDEF".split(""); // 6 rows (A-F)
-  const cols = Array.from({ length: 13 }, (_, i) => i + 1); // 13 columns (1-13)
-
-  // Store colors for each cell in React state
+  // Store the aggregated average data from /api/chatAll
+  const [allData, setAllData] = useState<Record<string, CellAverages>>({});
+  // Store final color for each "row:col"
   const [cellColors, setCellColors] = useState<Record<string, RGBColor>>({});
-  // This state toggles to trigger a refetch
-  const [shouldRefetch, setShouldRefetch] = useState(true);
 
-  // Helper that fetches a single cell’s data and updates color immediately
-  const fetchCellColor = async (row: string, col: number) => {
-    const cellKey = `${row}:${col}`;
-    try {
-      const response = await fetch(`/api/chat?row=${row}&col=${col}`);
-      const data = await response.json();
-
-      let totalLove = 0;
-      let totalMoney = 0;
-      let totalHealth = 0;
-      let count = 0;
-
-      if (!data || !data.chats) {
-        // No data
-      } else if (Array.isArray(data.chats)) {
-        data.chats.forEach((item: msgProp) => {
-          totalLove += typeof item.love === "number" ? item.love : 0;
-          totalMoney += typeof item.money === "number" ? item.money : 0;
-          totalHealth += typeof item.health === "number" ? item.health : 0;
-        });
-        count = data.chats.length;
-      } else {
-        // Single chat object
-        const single = data.chats;
-        totalLove = typeof single.love === "number" ? single.love : 0;
-        totalMoney = typeof single.money === "number" ? single.money : 0;
-        totalHealth = typeof single.health === "number" ? single.health : 0;
-        count = 1;
-      }
-
-      // Compute average based on the filter
-      let average = 0;
-      if (count > 0) {
-        if (filter === "All") {
-          average = (totalLove + totalMoney + totalHealth) / (3 * count);
-        } else if (filter === "Love") {
-          average = totalLove / count;
-        } else if (filter === "Money") {
-          average = totalMoney / count;
-        } else if (filter === "Health") {
-          average = totalHealth / count;
-        }
-      }
-
-      // Decide color
-      let r = 0, g = 0, b = 0;
-      if (count === 0 || average === 0 || !Number.isFinite(average)) {
-        // Gray
-        r = g = b = 128;
-      } else if (average < 0) {
-        // Red
-        r = Math.min(255, Math.round(255 * (Math.abs(average) / 100)));
-      } else {
-        // Green
-        g = Math.min(255, Math.round(255 * (average / 100)));
-      }
-
-      // Update that cell’s color in state
-      setCellColors((prev) => ({
-        ...prev,
-        [cellKey]: { r, g, b },
-      }));
-    } catch (error) {
-      console.error("Error fetching data for cell:", cellKey, error);
-      // Mark error as gray
-      setCellColors((prev) => ({
-        ...prev,
-        [cellKey]: { r: 128, g: 128, b: 128 },
-      }));
-    }
-  };
-
-  // 1. Whenever `filter` or `shouldRefetch` changes, fetch all cells in parallel
+  // 1) Fetch once whenever filter changes
   useEffect(() => {
-    if (!shouldRefetch) return;
-    rows.forEach((row) => {
-      cols.forEach((col) => {
-        fetchCellColor(row, col);
+    const fetchAll = async () => {
+      try {
+        const res = await fetch("/api/chatAll");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setAllData(json.data);
+        } else {
+          console.error("chatAll error:", json.error);
+        }
+      } catch (err) {
+        console.error("Failed to fetch /api/chatAll:", err);
+      }
+    };
+    fetchAll();
+  }, [filter]); 
+  // ^ If you want to re-fetch each time the user picks a new filter
+
+  // 2) Recompute each cell’s color whenever allData or filter changes
+  useEffect(() => {
+    const newColors: Record<string, RGBColor> = {};
+
+    ROWS.forEach((row) => {
+      COLS.forEach((col) => {
+        const key = `${row}:${col}`;
+        const cellInfo = allData[key]; // e.g. { love, money, health }
+
+        let average = 0;
+        if (cellInfo) {
+          const { love, money, health } = cellInfo;
+          if (filter === "All") {
+            average = (love + money + health) / 3;
+          } else if (filter === "Love") {
+            average = love;
+          } else if (filter === "Money") {
+            average = money;
+          } else if (filter === "Health") {
+            average = health;
+          }
+        }
+
+        // Decide color
+        let r = 0, g = 0, b = 0;
+        if (!cellInfo || average === 0 || !Number.isFinite(average)) {
+          // Gray
+          r = g = b = 128;
+        } else if (average < 0) {
+          // Red
+          r = Math.min(255, Math.round(255 * (Math.abs(average) / 100)));
+        } else {
+          // Green
+          g = Math.min(255, Math.round(255 * (average / 100)));
+        }
+        newColors[key] = { r, g, b };
       });
     });
-    // done fetching
-    setShouldRefetch(false);
-  }, [filter, shouldRefetch]); 
 
-  // 2. Whenever `filter` changes, set `shouldRefetch(true)`, 
-  //    triggering the useEffect above
-  useEffect(() => {
-    setShouldRefetch(true);
-  }, [filter]);
+    setCellColors(newColors);
+  }, [allData, filter]);
 
   return (
     <div className="flex justify-center items-center h-full w-full">
       <div className="relative bg-[url('/Larngear_crop.png')] bg-contain p-2 rounded-lg shadow-lg w-full h-full">
-        {/* Full Grid Container */}
         <div
           className="grid w-full h-full"
           style={{
@@ -134,16 +101,26 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
             gridTemplateRows: "auto repeat(6, 1fr)",
           }}
         >
-          {/* Top-left button to trigger re-fetch */}
+          {/* Optional: a button to manually refresh */}
           <button
             className="w-16 h-16 rounded-xl border bg-gray-600 hover:bg-gray-700 text-sm text-white"
-            onClick={() => setShouldRefetch(true)}
+            onClick={async () => {
+              try {
+                const res = await fetch("/api/chatAll");
+                const json = await res.json();
+                if (json.success && json.data) {
+                  setAllData(json.data);
+                }
+              } catch (err) {
+                console.error("Manual refresh error:", err);
+              }
+            }}
           >
             Sadud Fortune
           </button>
 
           {/* Column Headers (1-13) */}
-          {cols.map((col) => (
+          {COLS.map((col) => (
             <div
               key={`col-${col}`}
               className="w-full h-16 flex justify-center items-center font-bold text-lg bg-gray-200 border bg-opacity-50"
@@ -153,7 +130,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
           ))}
 
           {/* Rows */}
-          {rows.map((row) => (
+          {ROWS.map((row) => (
             <React.Fragment key={`row-${row}`}>
               {/* Row Header (A-F) */}
               <div className="w-16 h-full flex justify-center items-center font-bold text-lg bg-gray-200 border bg-opacity-50">
@@ -161,11 +138,10 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
               </div>
 
               {/* Cells */}
-              {cols.map((col) => {
-                const cellLabel = `${row}${col}`;
+              {COLS.map((col) => {
+                const cellLabel = `${row}${col}`; // "A1", "A2", etc.
                 const cellKey = `${row}:${col}`;
-                const color = cellColors[cellKey] || { r: 0, g: 0, b: 0 };
-                const { r, g, b } = color;
+                const { r, g, b } = cellColors[cellKey] || { r: 0, g: 0, b: 0 };
 
                 return (
                   <button
