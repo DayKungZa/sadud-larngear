@@ -120,7 +120,7 @@ export default function Home() {
       <div className="flex w-full h-full border shadow-lg rounded-lg bg-white p-4">
         {/* Left Side - Grid + Filter Buttons */}
         <div className="w-2/3 h-full flex flex-col">
-          <h1 className="text-3xl font-bold mb-4 text-gray-800">Grid Table (6 × 13)</h1>
+          <h1 className="text-3xl font-bold mb-4 text-gray-800">Larngear</h1>
 
           {/* Filter Buttons */}
           <div className="flex items-center space-x-2 mb-2">
