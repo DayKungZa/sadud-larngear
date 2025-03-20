@@ -93,7 +93,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
 
   return (
     <div className="flex justify-center items-center h-full w-full">
-      <div className="relative bg-[url('/Larngear_crop.png')] bg-contain p-2 rounded-lg shadow-lg w-full h-full">
+      <div className="relative bg-[url('/Larngear_crop.png')] bg-no-repeat bg-cover p-2 rounded-lg shadow-lg w-full h-full">
         <div
           className="grid w-full h-full"
           style={{

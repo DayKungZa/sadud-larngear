@@ -16,36 +16,23 @@ export interface msgProp {
   health: number;
 }
 
-// Define your possible filter types:
 type FilterType = "All" | "Money" | "Love" | "Health";
 
 export default function Home() {
   const { user, isLoggedIn } = useAuth();
 
-  // State for which cell is selected in the grid
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
-
-  // State for opening the large ChatBot
   const [chatOpen, setChatOpen] = useState(false);
-
-  // Chat history for each cell
   const [chatHistory, setChatHistory] = useState<{ [key: string]: msgProp[] }>({});
-
-  // Keep track of which cells we've fetched
   const [fetchedCells, setFetchedCells] = useState<Set<string>>(new Set());
-
-  // Our new filter state
   const [filter, setFilter] = useState<FilterType>("All");
 
-  // Handle selecting a cell in the grid => fetch its chat data if needed
   const handleCellClick = async (cell: string) => {
     setSelectedCell(cell);
     setChatOpen(false);
 
-    // If we haven't fetched this cell’s chat data yet
     if (!fetchedCells.has(cell)) {
       try {
-        // The row is letters (A-F), the col is numbers (1-13)
         const [row, col] = cell.split(/(\d+)/).filter(Boolean);
         const response = await fetch(`/api/chat?row=${row}&col=${col}`);
         const data = await response.json();
@@ -71,7 +58,6 @@ export default function Home() {
     }
   };
 
-  // Handle sending a new message for the selected cell
   const handleSendMessage = async (
     message: string,
     title: string,
@@ -86,10 +72,8 @@ export default function Home() {
     title = title || "New Sadud";
     message = message || " ";
 
-    // Separate row & column from the cell label
     const [row, col] = selectedCell.match(/^([A-Za-z]+)(\d+)$/)!.slice(1);
 
-    // Update local state first (for instant feedback)
     setChatHistory((prev) => ({
       ...prev,
       [selectedCell]: [
@@ -99,107 +83,64 @@ export default function Home() {
     }));
 
     try {
-      console.log(`POSTING MESSAGE BY: ${username}`);
-      const response = await fetch("/api/chat", {
+      await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ row, col, username, title, message, love, money, health }),
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        console.error("Failed to save message:", data.error);
-      }
     } catch (error) {
       console.error("Chat Save Error:", error);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen w-full bg-gray-800 p-4">
-      <div className="flex w-full h-full border shadow-lg rounded-lg bg-red-900 p-4">
-        {/* Left Side - Grid + Filter Buttons */}
-        <div className="w-2/3 h-full flex flex-col">
-          <h1 className="text-3xl font-bold mb-4 text-white">Sadud Larngear</h1>
+    <div className="flex flex-col items-center justify-center w-full h-screen bg-gray-800 p-2 md:p-4">
+      <div className="flex flex-col md:flex-row w-full h-full max-w-screen-xl border shadow-lg rounded-lg bg-red-900 p-2 md:p-4">
+        <div className="md:w-2/3 w-full flex flex-col">
+          <h1 className="text-2xl md:text-3xl font-bold mb-4 text-white">Sadud Larngear</h1>
 
-          {/* Filter Buttons */}
-          <div className="flex items-center space-x-2 mb-2 text-gray-800">
-            <button
-              className={`px-3 py-1 rounded-lg border ${
-                filter === "All" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
-              }`}
-              onClick={() => setFilter("All")}
-            >
-              All
-            </button>
-            <button
-              className={`px-3 py-1 rounded-lg border ${
-                filter === "Money" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
-              }`}
-              onClick={() => setFilter("Money")}
-            >
-              Money
-            </button>
-            <button
-              className={`px-3 py-1 rounded-lg border ${
-                filter === "Love" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
-              }`}
-              onClick={() => setFilter("Love")}
-            >
-              Love
-            </button>
-            <button
-              className={`px-3 py-1 rounded-lg border ${
-                filter === "Health" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
-              }`}
-              onClick={() => setFilter("Health")}
-            >
-              Health
-            </button>
+          <div className="flex flex-wrap gap-2 mb-2 text-gray-800">
+            {["All", "Money", "Love", "Health"].map((item) => (
+              <button
+                key={item}
+                className={`px-2 md:px-3 py-1 rounded-lg border text-sm md:text-base ${
+                  filter === item ? "bg-gray-500 text-white" : "bg-white text-gray-800"
+                }`}
+                onClick={() => setFilter(item as FilterType)}
+              >
+                {item}
+              </button>
+            ))}
           </div>
 
-          {/* The Grid itself */}
-          <div className="w-full h-full">
-            {/* We pass our chosen filter down to Grid as a prop */}
+          <div className="flex-1 overflow-auto">
             <Grid onCellSelect={handleCellClick} filter={filter} />
           </div>
         </div>
 
-        {/* Right Side - Detail Panel / Chat */}
-        <div className="w-1/3 h-full p-4 m-4 flex flex-col border-l relative bg-gray-800 border border-white rounded-lg">
-          {/* If Chatbot is open, show the big ChatBot */}
+        <div className="md:w-1/3 w-full md:mt-0 mt-4 p-2 md:p-4 flex flex-col border-l relative bg-gray-800 border-white rounded-lg">
           {chatOpen ? (
             <ChatBot onClose={() => setChatOpen(false)} />
+          ) : selectedCell ? (
+            <ChatPanel
+              cell={selectedCell}
+              messages={chatHistory[selectedCell] || []}
+              onSendMessage={handleSendMessage}
+              onClose={() => setSelectedCell(null)}
+            />
           ) : (
-            <>
-              {/* Show the mini Chat for selected cell */}
-              {selectedCell ? (
-                <div className="flex-grow h-[75%] overflow-hidden text-black">
-                  <ChatPanel
-                    cell={selectedCell}
-                    messages={chatHistory[selectedCell] || []}
-                    onSendMessage={handleSendMessage}
-                    onClose={() => setSelectedCell(null)}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col justify-center items-center flex-grow">
-                  <h2 className="text-2xl font-semibold text-gray-800">Detail Panel</h2>
-                  <p className="mt-2 text-gray-400 text-lg">Click a cell to open chat.</p>
-                </div>
-              )}
-
-              {/* Button to open full ChatBot */}
-              <div className="absolute bottom-4 left-4 right-4 flex justify-center">
-                <button
-                  className="w-full max-w-[90%] px-6 py-4 bg-white text-blue-500 font-semibold rounded-xl shadow-md border hover:bg-gray-100 transition-all"
-                  onClick={() => setChatOpen(true)}
-                >
-                  💬 Open Chatbot
-                </button>
-              </div>
-            </>
+            <div className="flex flex-col justify-center items-center flex-grow">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-300">Detail Panel</h2>
+              <p className="mt-2 text-gray-400 text-center">Click a cell to open chat.</p>
+            </div>
           )}
+
+          <button
+            className="mt-4 md:mt-auto px-4 py-2 md:px-6 md:py-4 bg-white text-blue-500 font-semibold rounded-xl shadow-md border hover:bg-gray-100 transition-all"
+            onClick={() => setChatOpen(true)}
+          >
+            💬 Open Chatbot
+          </button>
         </div>
       </div>
     </div>
