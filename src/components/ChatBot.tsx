@@ -65,8 +65,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
       className="flex flex-col h-full w-full bg-white rounded-lg shadow-lg border"
     >
       {/* Header */}
-      <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">🔮 Chat with the Astrologer</h2>
+      <div className="p-4 bg-red-800 border-b flex justify-between items-center rounded-lg">
+        <h2 className="text-xl font-semibold text-white">🔮 Chat with Ajarn Gear</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500 transition">
           <X size={24} />
         </button>
@@ -96,7 +96,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="p-4 border-t bg-white flex items-center">
+      <div className="p-4 border-t bg-white flex items-center rounded-lg">
         <input
           className="flex-1 p-3 border rounded-lg bg-gray-100 focus:ring focus:ring-blue-300 outline-none text-black"
           value={input}

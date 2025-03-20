@@ -3,16 +3,8 @@ import { X, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import Slider from "./Slider";
+import { msgProp } from "@/app/page";
 
-interface msgProp{
-  isUser: boolean;
-  username: string;
-  title: string;
-  text: string;
-  love: number;
-  money: number;
-  health: number;
-}
 interface ChatPanelProps {
   cell: string;
   messages: msgProp[];
@@ -63,8 +55,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
       className="flex flex-col h-[90%] w-full bg-white rounded-lg shadow-lg border"
     >
       {/*Header*/}
-      <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Saduds of {cell}</h2>
+      <div className="p-4 bg-gray-100 border-b flex justify-between items-center bg-red-800 border-white rounded-lg">
+        <h2 className="text-xl font-semibold text-white">Saduds of {cell}</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500 transition">
           <X size={24} />
         </button>
@@ -76,8 +68,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
           <p className="text-gray-400 text-center">Start typing to chat...</p>
         ) : (
           messages.map((msg, index) => {
+            console.log({msg});
             const isCurrentUser = isLoggedIn && user?.username === msg.username && msg.username !== "Anonymous";
-
+            console.log({
+              isCurrentUser,
+              isLoggedIn,
+              user,
+              msg,
+            });
             return (
               <motion.div
                 key={index}
@@ -117,7 +115,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
 
 
                 {/* Message */}
-                <p className="text-sm leading-relaxed break-words">{msg.text}</p>
+                <p className="text-sm leading-relaxed break-words">{msg.message}</p>
               </motion.div>
 
             );
@@ -127,7 +125,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
       </div>
 
       {/*Send Button*/}
-      <div className="p-4 border-t bg-white flex justify-center">
+      <div className="p-4 border-t bg-white flex justify-center rounded-lg">
         <button
           className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
           onClick={() => setIsModalOpen(true)}

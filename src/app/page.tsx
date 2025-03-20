@@ -6,11 +6,11 @@ import ChatPanel from "@/components/ChatPanel";
 import ChatBot from "@/components/ChatBot";
 import { useAuth } from "@/app/context/AuthContext";
 
-interface msgProp {
+export interface msgProp {
   isUser: boolean;
   username: string;
   title: string;
-  text: string;
+  message: string;
   love: number;
   money: number;
   health: number;
@@ -56,7 +56,7 @@ export default function Home() {
             [cell]: data.chats.map((chat: msgProp) => ({
               isUser: isLoggedIn,
               username: chat.username,
-              text: chat.text,
+              message: chat.message,
               title: chat.title,
               love: chat.love,
               money: chat.money,
@@ -94,7 +94,7 @@ export default function Home() {
       ...prev,
       [selectedCell]: [
         ...(prev[selectedCell] || []),
-        { isUser: true, username, title, text: message, love, money, health },
+        { isUser: true, username, title, message, love, money, health },
       ],
     }));
 
@@ -116,11 +116,11 @@ export default function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen w-full bg-gray-100 p-4">
-      <div className="flex w-full h-full border shadow-lg rounded-lg bg-white p-4">
+    <div className="flex items-center justify-center h-screen w-full bg-gray-800 p-4">
+      <div className="flex w-full h-full border shadow-lg rounded-lg bg-red-900 p-4">
         {/* Left Side - Grid + Filter Buttons */}
         <div className="w-2/3 h-full flex flex-col">
-          <h1 className="text-3xl font-bold mb-4 text-gray-800">Larngear</h1>
+          <h1 className="text-3xl font-bold mb-4 text-white">Sadud Larngear</h1>
 
           {/* Filter Buttons */}
           <div className="flex items-center space-x-2 mb-2">
@@ -166,7 +166,7 @@ export default function Home() {
         </div>
 
         {/* Right Side - Detail Panel / Chat */}
-        <div className="w-1/3 h-full p-4 flex flex-col border-l relative bg-white">
+        <div className="w-1/3 h-full p-4 m-4 flex flex-col border-l relative bg-gray-800 border border-white rounded-lg">
           {/* If Chatbot is open, show the big ChatBot */}
           {chatOpen ? (
             <ChatBot onClose={() => setChatOpen(false)} />
