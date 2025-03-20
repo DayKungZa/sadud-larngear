@@ -65,8 +65,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ onClose }) => {
       className="flex flex-col h-full w-full bg-white rounded-lg shadow-lg border"
     >
       {/* Header */}
-      <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">🔮 Chat with the Astrologer</h2>
+      <div className="p-4 bg-red-800 rounded-lg border-b flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-white">🔮 Chat with Ajarn Gear</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500 transition">
           <X size={24} />
         </button>

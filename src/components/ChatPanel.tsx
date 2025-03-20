@@ -63,8 +63,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
       className="flex flex-col h-[90%] w-full bg-white rounded-lg shadow-lg border"
     >
       {/*Header*/}
-      <div className="p-4 bg-gray-100 border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Saduds of {cell}</h2>
+      <div className="p-4 bg-gray-100 border-b border-white bg-red-800 rounded-lg flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-white">Saduds of {cell}</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500 transition">
           <X size={24} />
         </button>
@@ -127,7 +127,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
       </div>
 
       {/*Send Button*/}
-      <div className="p-4 border-t bg-white flex justify-center">
+      <div className="p-4 border-t rounded-lg bg-white flex justify-center">
         <button
           className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
           onClick={() => setIsModalOpen(true)}
