@@ -103,7 +103,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
         >
           {/* Optional: a button to manually refresh */}
           <button
-            className="w-16 h-16 rounded-xl border bg-gray-200 text-sm text-white"
+            className="w-full h-full rounded-xl border bg-gray-200 text-sm text-white bg-opacity-0"
           >
           </button>
 
@@ -111,7 +111,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
           {COLS.map((col) => (
             <div
               key={`col-${col}`}
-              className="w-full h-16 flex justify-center items-center font-bold text-lg bg-gray-200 border bg-opacity-50"
+              className="w-full h-full flex justify-center items-center font-bold text-lg bg-gray-200 border bg-opacity-50"
             >
               {col}
             </div>
@@ -121,7 +121,7 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
           {ROWS.map((row) => (
             <React.Fragment key={`row-${row}`}>
               {/* Row Header (A-F) */}
-              <div className="w-16 h-full flex justify-center items-center font-bold text-lg bg-gray-200 border bg-opacity-50">
+              <div className="w-full h-full flex justify-center items-center font-bold text-lg bg-gray-200 border bg-opacity-50">
                 {row}
               </div>
 
