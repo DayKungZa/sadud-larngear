@@ -123,7 +123,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold mb-4 text-white">Sadud Larngear</h1>
 
           {/* Filter Buttons */}
-          <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-center space-x-2 mb-2 text-gray-800">
             <button
               className={`px-3 py-1 rounded-lg border ${
                 filter === "All" ? "bg-gray-500 text-white" : "bg-white"
