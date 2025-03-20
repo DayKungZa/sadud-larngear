@@ -103,20 +103,8 @@ const Grid: React.FC<GridProps> = ({ onCellSelect, filter }) => {
         >
           {/* Optional: a button to manually refresh */}
           <button
-            className="w-16 h-16 rounded-xl border bg-gray-600 hover:bg-gray-700 text-sm text-white"
-            onClick={async () => {
-              try {
-                const res = await fetch("/api/chatAll");
-                const json = await res.json();
-                if (json.success && json.data) {
-                  setAllData(json.data);
-                }
-              } catch (err) {
-                console.error("Manual refresh error:", err);
-              }
-            }}
+            className="w-16 h-16 rounded-xl border bg-gray-200 text-sm text-white"
           >
-            Sadud Fortune
           </button>
 
           {/* Column Headers (1-13) */}
