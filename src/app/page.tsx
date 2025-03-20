@@ -126,7 +126,7 @@ export default function Home() {
           <div className="flex items-center space-x-2 mb-2 text-gray-800">
             <button
               className={`px-3 py-1 rounded-lg border ${
-                filter === "All" ? "bg-gray-500 text-white" : "bg-white"
+                filter === "All" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
               }`}
               onClick={() => setFilter("All")}
             >
@@ -134,7 +134,7 @@ export default function Home() {
             </button>
             <button
               className={`px-3 py-1 rounded-lg border ${
-                filter === "Money" ? "bg-gray-500 text-white" : "bg-white"
+                filter === "Money" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
               }`}
               onClick={() => setFilter("Money")}
             >
@@ -142,7 +142,7 @@ export default function Home() {
             </button>
             <button
               className={`px-3 py-1 rounded-lg border ${
-                filter === "Love" ? "bg-gray-500 text-white" : "bg-white"
+                filter === "Love" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
               }`}
               onClick={() => setFilter("Love")}
             >
@@ -150,7 +150,7 @@ export default function Home() {
             </button>
             <button
               className={`px-3 py-1 rounded-lg border ${
-                filter === "Health" ? "bg-gray-500 text-white" : "bg-white"
+                filter === "Health" ? "bg-gray-500 text-white" : "bg-white text-gray-800"
               }`}
               onClick={() => setFilter("Health")}
             >
