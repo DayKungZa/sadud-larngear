@@ -82,7 +82,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
                 initial={{ opacity: 0, x: isCurrentUser ? 30 : -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`p-4 w-fit max-w-[75%] rounded-2xl shadow-md text-gray ${
+                className={`p-4 w-fit max-w-[75%] rounded-2xl shadow-md text-gray-800 ${
                   isCurrentUser ? "ml-auto bg-blue-100 " : "mr-auto bg-gray-100"
                 }`}
               >
@@ -90,7 +90,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ cell, messages, onSendMessage, on
                 <p className="text-lg font-semibold mb-1">{msg.title || "New Message"}</p>
 
                 {/* Username */}
-                <p className="text-xs font-medium mb-2 text-gray-500">
+                <p className="text-xs font-medium mb-2 text-gray-800">
                   by {msg.username || "Anonymous"}
                 </p>
 
